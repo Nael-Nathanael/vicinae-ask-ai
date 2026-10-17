@@ -37,6 +37,12 @@ function isNodeScript(file: string): boolean {
 	}
 }
 
+/** Running CLIs. Vicinae can end the extension without unmounting it, so they are killed on exit too. */
+const live = new Set<ChildProcessWithoutNullStreams>();
+process.once("exit", () => {
+	for (const child of live) child.kill("SIGKILL");
+});
+
 export type CliRun = {
 	child: ChildProcessWithoutNullStreams;
 	/** Resolves with stderr when the process exits 0; rejects otherwise. */
@@ -66,9 +72,12 @@ export function runCli(opts: {
 			`Couldn't find \`${opts.name}\`. Install ${opts.label}, or add its folder under **Extra PATH** in Ask AI Settings (Ctrl+,).`,
 		);
 	}
+	if (opts.signal.aborted) throw new DOMException("Aborted", "AbortError");
 	const [command, args] = isNodeScript(bin) ? [process.execPath, [bin, ...opts.args]] : [bin, opts.args];
 	const env = { ...process.env, PATH: [dirname(bin), ...searchPath(opts.extraPath)].join(delimiter) };
 	const child = spawn(command, args, { cwd: opts.cwd, env, stdio: ["pipe", "pipe", "pipe"] });
+	live.add(child);
+	child.once("exit", () => live.delete(child));
 
 	let stderr = "";
 	child.stderr.on("data", (d) => {

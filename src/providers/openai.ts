@@ -1,5 +1,5 @@
 import { assertOk, sseEvents } from "./sse.ts";
-import { type Provider, ProviderError, requireKey } from "./types.ts";
+import { type Provider, ProviderError, requireKey, withTimeout } from "./types.ts";
 
 /** Maps one Responses API stream event to answer text, or throws on failure. */
 export function openaiEvent(data: string): string | undefined {
@@ -17,25 +17,29 @@ export const openai: Provider = {
 	async stream(messages, opts) {
 		// A gateway URL may be given with or without its trailing /v1.
 		const base = opts.baseUrl?.trim().replace(/\/+$/, "").replace(/\/v1$/, "") || "https://api.openai.com";
-		const res = await fetch(`${base}/v1/responses`, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${requireKey(opts, "OpenAI API", "API Key")}`,
-				"Content-Type": "application/json",
+		const key = requireKey(opts, "OpenAI API", "API Key");
+		await withTimeout(
+			opts.signal,
+			async (signal) => {
+				const res = await fetch(`${base}/v1/responses`, {
+					method: "POST",
+					headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+					body: JSON.stringify({
+						model: opts.model || "gpt-5.5",
+						instructions: opts.systemPrompt,
+						input: messages.map((m) => ({ role: m.role, content: m.content })),
+						stream: true,
+						store: false,
+					}),
+					signal,
+				});
+				await assertOk(res, "OpenAI API");
+				for await (const { data } of sseEvents(res.body!)) {
+					const text = openaiEvent(data);
+					if (text) opts.onDelta(text);
+				}
 			},
-			body: JSON.stringify({
-				model: opts.model || "gpt-5.5",
-				instructions: opts.systemPrompt,
-				input: messages.map((m) => ({ role: m.role, content: m.content })),
-				stream: true,
-				store: false,
-			}),
-			signal: opts.signal,
-		});
-		await assertOk(res, "OpenAI API");
-		for await (const { data } of sseEvents(res.body!)) {
-			const text = openaiEvent(data);
-			if (text) opts.onDelta(text);
-		}
+			"OpenAI API",
+		);
 	},
 };

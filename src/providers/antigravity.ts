@@ -18,19 +18,16 @@ export const antigravity: Provider = {
 	title: "Antigravity",
 	async stream(messages, opts) {
 		const prompt = `${opts.systemPrompt}\n\n${transcript(messages)}`;
-		// agy only takes the prompt as an argument; Linux caps one argument at 128 KiB.
-		if (Buffer.byteLength(prompt) > 120_000) {
-			throw new ProviderError("This conversation is too long for Antigravity. Start a new conversation (Ctrl+N).");
-		}
 		const args = [
+			// The prompt goes through stdin, so it never shows in the process list.
+			"--input-format", "stream-json",
 			"--output-format", "stream-json",
 			"--print-timeout", "290s",
 			"--disable-slash-commands",
 			// Restricts terminal commands. Tools that need a permission prompt are refused in this headless mode.
 			"--sandbox",
 			...(opts.model ? ["--model", opts.model] : []),
-			// Attached with "=" so a prompt starting with "-" is never read as a flag.
-			`--print=${prompt}`,
+			"--print=",
 		];
 		let failure: unknown;
 		let answered = false;
@@ -41,6 +38,7 @@ export const antigravity: Provider = {
 			args,
 			cwd: opts.workdir,
 			extraPath: opts.extraPath,
+			input: `${JSON.stringify({ event: "user", message: { content: prompt } })}\n`,
 			signal: opts.signal,
 			onLine(line) {
 				try {

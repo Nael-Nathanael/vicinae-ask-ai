@@ -33,6 +33,18 @@ export function requireKey(opts: StreamOptions, provider: string, setting: strin
 	return key;
 }
 
+/** Runs an HTTP provider call with the user's stop signal plus the same 5-minute limit the CLIs get. */
+export async function withTimeout(signal: AbortSignal, call: (signal: AbortSignal) => Promise<void>, provider: string) {
+	try {
+		await call(AbortSignal.any([signal, AbortSignal.timeout(300_000)]));
+	} catch (err) {
+		if (err instanceof DOMException && err.name === "TimeoutError") {
+			throw new ProviderError(`${provider} took longer than 5 minutes and was stopped.`);
+		}
+		throw err;
+	}
+}
+
 /** Folds a conversation into one prompt for CLIs that take a single message. */
 export function transcript(messages: Message[]): string {
 	if (messages.length === 1) return messages[0].content;

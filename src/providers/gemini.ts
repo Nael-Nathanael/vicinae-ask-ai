@@ -1,5 +1,5 @@
 import { assertOk, sseEvents } from "./sse.ts";
-import { type Provider, ProviderError, requireKey } from "./types.ts";
+import { type Provider, ProviderError, requireKey, withTimeout } from "./types.ts";
 
 /** Maps one streamGenerateContent chunk to answer text, or throws when the answer was blocked. */
 export function geminiChunk(data: string): string | undefined {
@@ -15,22 +15,26 @@ export const gemini: Provider = {
 	title: "Gemini API",
 	async stream(messages, opts) {
 		const model = encodeURIComponent(opts.model || "gemini-3.8-flash");
-		const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`, {
-			method: "POST",
-			headers: {
-				"x-goog-api-key": requireKey(opts, "Gemini API", "API Key"),
-				"Content-Type": "application/json",
+		const key = requireKey(opts, "Gemini API", "API Key");
+		await withTimeout(
+			opts.signal,
+			async (signal) => {
+				const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`, {
+					method: "POST",
+					headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
+					body: JSON.stringify({
+						systemInstruction: { parts: [{ text: opts.systemPrompt }] },
+						contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+					}),
+					signal,
+				});
+				await assertOk(res, "Gemini API");
+				for await (const { data } of sseEvents(res.body!)) {
+					const text = geminiChunk(data);
+					if (text) opts.onDelta(text);
+				}
 			},
-			body: JSON.stringify({
-				systemInstruction: { parts: [{ text: opts.systemPrompt }] },
-				contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
-			}),
-			signal: opts.signal,
-		});
-		await assertOk(res, "Gemini API");
-		for await (const { data } of sseEvents(res.body!)) {
-			const text = geminiChunk(data);
-			if (text) opts.onDelta(text);
-		}
+			"Gemini API",
+		);
 	},
 };

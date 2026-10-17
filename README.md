@@ -1,6 +1,6 @@
 # Ask AI for Vicinae
 
-Type a question into [Vicinae](https://vicinae.com). If nothing matches, press Enter and the answer streams in full-width. Press Esc to ask a follow-up. It's the Spotlight-to-Siri flow from macOS, for Linux.
+Type a question into [Vicinae](https://vicinae.com). If nothing matches, press Enter and the answer streams in full-width. Press Esc to ask a follow-up. It's the Spotlight-to-Siri flow from macOS, for Linux; [docs/siri-reference.md](docs/siri-reference.md) documents that flow and what is left to copy.
 
 ![An answer with a comparison table, full-width in Vicinae](metadata/ask-ai-1.png)
 
@@ -28,7 +28,7 @@ The three login providers run the official command-line tool you already have in
 | Provider | Tools left to the model |
 |---|---|
 | Claude Code | None: `--tools ""`, no MCP servers, no settings or hooks loaded. |
-| Codex | None: the shell, browser, computer-use, image, sub-agent and other tool features are disabled, MCP servers are switched off, and the sandbox is read-only. |
+| Codex | None: web search, the shell, browser, computer-use, image, sub-agent and other tool features are disabled, MCP servers are switched off, and the sandbox is read-only. |
 | Antigravity | Its built-in tools stay loaded; Antigravity has no switch to remove them. Terminal commands run sandboxed (`--sandbox`), and anything that needs a permission prompt, such as reading your files, is refused because the run is headless. Rules you have pre-approved in your own Antigravity settings still apply. |
 
 **Antigravity warning:** Google has suspended accounts for using third-party software with an Antigravity login. The reported cases extracted OAuth tokens, which this extension doesn't do, but the risk is yours. It is never the default.

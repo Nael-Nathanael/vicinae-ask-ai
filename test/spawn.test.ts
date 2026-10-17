@@ -50,6 +50,12 @@ test("non-zero exit becomes a readable error with the login hint", async () => {
 	await assert.rejects(run.done, (err: unknown) => err instanceof ProviderError && /code 3/.test(err.message) && /Sign in\./.test(err.message));
 });
 
+test("an already-aborted signal never starts the CLI", () => {
+	const controller = new AbortController();
+	controller.abort();
+	assert.throws(() => runCli({ ...base, args: [], input: "x", signal: controller.signal, onLine() {} }), { name: "AbortError" });
+});
+
 test("abort kills the child", async () => {
 	const controller = new AbortController();
 	const run = runCli({ ...base, args: ["--hang"], input: "x", signal: controller.signal, onLine: () => controller.abort() });

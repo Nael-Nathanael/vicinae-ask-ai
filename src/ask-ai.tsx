@@ -59,7 +59,8 @@ export function Composer(props: { fallbackText?: string; conversation?: Conversa
 		const first = !sawSearchEvent.current;
 		sawSearchEvent.current = true;
 		const early = Date.now() - mountedAt.current < FALLBACK_WINDOW_MS;
-		if (first && early && text.trim() && !props.conversation) {
+		// Replayed fallback text arrives whole; a user typing after a launch by name starts with one character.
+		if (first && early && text.trim().length > 1 && !props.conversation) {
 			if (fallbackSent.current !== text) {
 				fallbackSent.current = text;
 				send(text, true);

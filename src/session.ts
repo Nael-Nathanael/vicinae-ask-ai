@@ -49,10 +49,6 @@ export function stop() {
 	controller?.abort();
 }
 
-function updateTurn(turnId: string, patch: Partial<Turn>) {
-	set({ ...conv, updatedAt: Date.now(), turns: conv.turns.map((t) => (t.id === turnId ? { ...t, ...patch } : t)) });
-}
-
 /** Sends a question in the current conversation (or a fresh one) and streams the answer into it. */
 export async function ask(raw: string, opts: { fresh?: boolean } = {}) {
 	const question = raw.trim();
@@ -62,11 +58,28 @@ export async function ask(raw: string, opts: { fresh?: boolean } = {}) {
 	controller = own;
 
 	const settings = await loadSettings();
+	// Stopped, or replaced by a new conversation, while settings loaded.
+	if (own.signal.aborted) return;
 	const provider = providerById(settings.provider);
 	const base = opts.fresh ? newConversation(provider.id) : conv;
 	const turn: Turn = { id: newId(), question, answer: "", providerId: provider.id, createdAt: Date.now(), status: "streaming" };
 	const messages = [...history(base), { role: "user" as const, content: question }];
-	set({ ...base, providerId: provider.id, title: base.title || question.slice(0, 80), updatedAt: Date.now(), turns: [...base.turns, turn] });
+
+	// This ask's own conversation. If the user moves to another one, updates and saves still land here.
+	let mine: Conversation = {
+		...base,
+		providerId: provider.id,
+		title: base.title || question.slice(0, 80),
+		updatedAt: Date.now(),
+		turns: [...base.turns, turn],
+	};
+	set(mine);
+	const current = () => (conv.id === mine.id ? conv : mine);
+	const updateTurn = (turnId: string, patch: Partial<Turn>) => {
+		const c = current();
+		mine = { ...c, updatedAt: Date.now(), turns: c.turns.map((t) => (t.id === turnId ? { ...t, ...patch } : t)) };
+		if (conv.id === mine.id) set(mine);
+	};
 
 	const workdir = join(environment.supportPath, "workdir");
 	mkdirSync(workdir, { recursive: true });
@@ -81,7 +94,7 @@ export async function ask(raw: string, opts: { fresh?: boolean } = {}) {
 		}
 	};
 	const flushTimer = setInterval(flush, FLUSH_MS);
-	const saveTimer = setInterval(() => saveConversation(conv), SAVE_MS);
+	const saveTimer = setInterval(() => saveConversation(current()), SAVE_MS);
 
 	try {
 		await provider.stream(messages, {
@@ -106,6 +119,6 @@ export async function ask(raw: string, opts: { fresh?: boolean } = {}) {
 		clearInterval(flushTimer);
 		clearInterval(saveTimer);
 		if (controller === own) controller = undefined;
-		await saveConversation(conv);
+		await saveConversation(current());
 	}
 }

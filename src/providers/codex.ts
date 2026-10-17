@@ -28,7 +28,9 @@ const TOOL_FEATURES = [
 
 /**
  * Talks to `codex app-server` over stdio JSON-RPC: one ephemeral, read-only thread per turn,
- * with tool features and the user's MCP servers switched off, so the model can only answer.
+ * with tool features, web search and the user's MCP servers switched off, so the model can only answer.
+ * Features are turned off with `-c features.X=false`, which only warns for a name a future Codex drops
+ * (`--disable X` would refuse to start).
  */
 export const codex: Provider = {
 	id: "codex",
@@ -45,7 +47,7 @@ export const codex: Provider = {
 			name: "codex",
 			label: "Codex",
 			loginHint: LOGIN_HINT,
-			args: ["app-server", ...TOOL_FEATURES.flatMap((f) => ["--disable", f])],
+			args: ["app-server", ...TOOL_FEATURES.flatMap((f) => ["-c", `features.${f}=false`]), "-c", 'web_search="disabled"'],
 			cwd: opts.workdir,
 			extraPath: opts.extraPath,
 			keepStdinOpen: true,
@@ -106,7 +108,7 @@ export const codex: Provider = {
 				sandbox: "read-only",
 				ephemeral: true,
 				developerInstructions: opts.systemPrompt,
-				config: { mcp_servers: mcpOff },
+				config: { mcp_servers: mcpOff, web_search: "disabled" },
 				...(opts.model ? { model: opts.model } : {}),
 			});
 			await call("turn/start", {

@@ -7,7 +7,7 @@ export type ProviderId = "anthropic" | "openai" | "gemini" | "claude-code" | "co
 export type StreamOptions = {
 	model?: string;
 	apiKey?: string;
-	/** Anthropic-compatible gateway; the key is then sent as a bearer token. */
+	/** Gateway for the Claude or OpenAI API; for Claude the key is then sent as a bearer token. */
 	baseUrl?: string;
 	systemPrompt: string;
 	/** Empty folder the CLIs run in, so they see no project files. */

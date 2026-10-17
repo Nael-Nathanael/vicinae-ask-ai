@@ -11,6 +11,7 @@ const CLI: Partial<Record<ProviderId, { bin: string; login: string }>> = {
 
 const DEFAULT_MODEL: Partial<Record<ProviderId, string>> = {
 	anthropic: "claude-opus-5-5",
+	openai: "gpt-5.5",
 	gemini: "gemini-3.8-flash",
 };
 
@@ -75,12 +76,16 @@ export function SettingsForm(props: { onSaved?: (settings: Settings) => void }) 
 					onChange={setField("apiKey")}
 				/>
 			)}
-			{id === "anthropic" && (
+			{(id === "anthropic" || id === "openai") && (
 				<Form.TextField
 					id={`${id}-baseUrl`}
 					title="Base URL"
-					placeholder="https://api.anthropic.com"
-					info="Optional. Point at an Anthropic-compatible gateway; the key is then sent as a bearer token."
+					placeholder={id === "anthropic" ? "https://api.anthropic.com" : "https://api.openai.com"}
+					info={
+						id === "anthropic"
+							? "Optional. Point at an Anthropic-compatible gateway; the key is then sent as a bearer token."
+							: "Optional. Point at a gateway that serves the OpenAI Responses API."
+					}
 					value={current.baseUrl ?? ""}
 					onChange={setField("baseUrl")}
 				/>

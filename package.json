@@ -2,12 +2,12 @@
 	"$schema": "https://raw.githubusercontent.com/vicinaehq/vicinae/refs/heads/main/extra/schemas/extension.json",
 	"name": "ask-ai",
 	"title": "Ask AI",
-	"description": "Ask anything from the root search and read a streamed answer, with follow-ups, history and interactive calculators. Uses Claude Code, Codex or Antigravity through your existing login, or the Claude and Gemini APIs",
+	"description": "Ask anything from the root search and read a streamed answer, with follow-ups, history and interactive calculators. Uses Claude Code, Codex or Antigravity through your existing login, or the Claude, OpenAI and Gemini APIs",
 	"categories": [
 		"Productivity",
 		"Developer Tools"
 	],
-	"keywords": ["ai", "assistant", "chat", "llm", "claude", "gemini", "codex", "antigravity", "question", "fallback"],
+	"keywords": ["ai", "assistant", "chat", "llm", "claude", "openai", "gemini", "codex", "antigravity", "question", "fallback"],
 	"license": "MIT",
 	"author": "Nael-Nathanael",
 	"contributors": [],

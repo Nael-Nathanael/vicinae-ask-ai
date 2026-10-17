@@ -54,6 +54,7 @@ test("codex: deltas, completion, retries and failures", () => {
 test("openai: text deltas and errors", () => {
 	assert.equal(openaiEvent('{"type":"response.output_text.delta","delta":"In","sequence_number":1}'), "In");
 	assert.equal(openaiEvent('{"type":"response.completed","response":{}}'), undefined);
+	assert.equal(openaiEvent("[DONE]"), undefined);
 	assert.throws(() => openaiEvent('{"type":"error","error":{"message":"bad key"}}'), /bad key/);
 });
 

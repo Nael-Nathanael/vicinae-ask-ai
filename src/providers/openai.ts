@@ -3,6 +3,8 @@ import { type Provider, ProviderError, requireKey } from "./types.ts";
 
 /** Maps one Responses API stream event to answer text, or throws on failure. */
 export function openaiEvent(data: string): string | undefined {
+	// OpenAI-compatible gateways end the stream with a "[DONE]" sentinel.
+	if (data.trim() === "[DONE]") return undefined;
 	const event = JSON.parse(data);
 	if (event.type === "response.output_text.delta") return event.delta;
 	if (event.type === "error") throw new ProviderError(`OpenAI API: ${event.error?.message ?? event.message ?? "error"}`);
@@ -13,10 +15,12 @@ export const openai: Provider = {
 	id: "openai",
 	title: "OpenAI API",
 	async stream(messages, opts) {
-		const res = await fetch("https://api.openai.com/v1/responses", {
+		// A gateway URL may be given with or without its trailing /v1.
+		const base = opts.baseUrl?.trim().replace(/\/+$/, "").replace(/\/v1$/, "") || "https://api.openai.com";
+		const res = await fetch(`${base}/v1/responses`, {
 			method: "POST",
 			headers: {
-				Authorization: `Bearer ${requireKey(opts, "OpenAI API", "OpenAI API Key")}`,
+				Authorization: `Bearer ${requireKey(opts, "OpenAI API", "API Key")}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({

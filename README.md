@@ -18,6 +18,7 @@ Type a question into [Vicinae](https://vicinae.com). If nothing matches, press E
 | Codex | Your existing `codex` login |
 | Antigravity | Your existing `agy` login |
 | Claude API | Anthropic API key, or any Anthropic-compatible gateway (set **Base URL**; the key is sent as a bearer token) |
+| OpenAI API | OpenAI API key, or any gateway serving the Responses API (set **Base URL**) |
 | Gemini API | Gemini API key |
 
 The three login providers run the official command-line tool you already have installed and signed in to. The extension never reads their credentials, and each question runs in an empty folder. What the model can still do differs:
@@ -85,7 +86,7 @@ npm run lint       # manifest check
 node --experimental-strip-types test/live.ts   # real calls; see the file header for keys
 ```
 
-Built against Vicinae 0.21.1 and works on newer versions. An OpenAI provider exists in `src/providers/openai.ts` but is not offered until it has been tested with a real key.
+Built against Vicinae 0.21.1 and works on newer versions.
 
 ## License
 

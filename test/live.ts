@@ -1,6 +1,6 @@
 // Live check against real providers (uses your logins and keys, and a little quota):
 //   node --experimental-strip-types test/live.ts [claude-code|codex|antigravity|anthropic|gemini ...]
-// Keys come from the environment: ASK_AI_CLAUDE_KEY (+ ASK_AI_CLAUDE_BASE_URL, ASK_AI_CLAUDE_MODEL) and GEMINI_API_KEY.
+// Keys come from the environment: ASK_AI_CLAUDE_KEY and ASK_AI_OPENAI_KEY (each + _BASE_URL, _MODEL), and GEMINI_API_KEY.
 // Not ANTHROPIC_*: the claude CLI reads those too and would follow them.
 // Runs with Vicinae's service PATH, which lacks ~/.local/bin, to prove the CLI lookup.
 import { mkdtempSync } from "node:fs";
@@ -12,6 +12,7 @@ import { antigravity } from "../src/providers/antigravity.ts";
 import { claudeCode } from "../src/providers/claude-code.ts";
 import { codex } from "../src/providers/codex.ts";
 import { gemini } from "../src/providers/gemini.ts";
+import { openai } from "../src/providers/openai.ts";
 import type { Message, Provider, StreamOptions } from "../src/providers/types.ts";
 
 process.env.PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
@@ -21,6 +22,7 @@ const all: [Provider, Partial<StreamOptions>][] = [
 	[codex, {}],
 	[antigravity, {}],
 	[anthropic, { apiKey: env.ASK_AI_CLAUDE_KEY, baseUrl: env.ASK_AI_CLAUDE_BASE_URL, model: env.ASK_AI_CLAUDE_MODEL }],
+	[openai, { apiKey: env.ASK_AI_OPENAI_KEY, baseUrl: env.ASK_AI_OPENAI_BASE_URL, model: env.ASK_AI_OPENAI_MODEL }],
 	[gemini, { apiKey: env.GEMINI_API_KEY }],
 ];
 const wanted = process.argv.slice(2);

@@ -5,9 +5,30 @@ const LOGIN_HINT = "If you're signed out, run `codex login` in a terminal.";
 
 type RpcMessage = { id?: number | string; method?: string; params?: any; result?: any; error?: { message?: string } };
 
+/** Codex features that give the model tools (shell, browser, computer control, sub-agents, ...). */
+const TOOL_FEATURES = [
+	"apps",
+	"plugins",
+	"shell_tool",
+	"unified_exec",
+	"browser_use",
+	"browser_use_external",
+	"computer_use",
+	"in_app_browser",
+	"image_generation",
+	"view_image",
+	"multi_agent",
+	"memories",
+	"hooks",
+	"skill_search",
+	"tool_suggest",
+	"goals",
+	"worktrees",
+];
+
 /**
  * Talks to `codex app-server` over stdio JSON-RPC: one ephemeral, read-only thread per turn,
- * with the user's MCP servers, apps and plugins switched off so a question starts fast and has no tools.
+ * with tool features and the user's MCP servers switched off, so the model can only answer.
  */
 export const codex: Provider = {
 	id: "codex",
@@ -24,7 +45,7 @@ export const codex: Provider = {
 			name: "codex",
 			label: "Codex",
 			loginHint: LOGIN_HINT,
-			args: ["app-server", "--disable", "apps", "--disable", "plugins"],
+			args: ["app-server", ...TOOL_FEATURES.flatMap((f) => ["--disable", f])],
 			cwd: opts.workdir,
 			extraPath: opts.extraPath,
 			keepStdinOpen: true,

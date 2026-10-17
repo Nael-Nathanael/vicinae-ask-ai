@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { antigravityLine } from "../src/providers/antigravity.ts";
+import { antigravityLine, silentEndMessage } from "../src/providers/antigravity.ts";
 import { claudeCodeLine } from "../src/providers/claude-code.ts";
 import { codexNotification } from "../src/providers/codex.ts";
 import { geminiChunk } from "../src/providers/gemini.ts";
@@ -29,6 +29,14 @@ test("antigravity: agent response deltas and failed results", () => {
 	assert.equal(antigravityLine('{"event":"step_update","step_update":{"step_type":"user_input","state":"DONE"}}'), undefined);
 	assert.equal(antigravityLine('{"event":"result","result":{"status":"SUCCESS","response":"hi there\\n"}}'), undefined);
 	assert.throws(() => antigravityLine('{"event":"result","result":{"status":"ERROR"}}'), ProviderError);
+});
+
+test("antigravity: a silent end explains a refused tool", () => {
+	// stderr recorded from agy 1.3.2 when a file read was refused in headless mode
+	const refused =
+		'jetski: no output produced — a tool required the "read_file" permission that headless mode cannot prompt for, so it was auto-denied.';
+	assert.match(silentEndMessage(refused), /tried to use a tool/);
+	assert.match(silentEndMessage(""), /finished without an answer/);
 });
 
 test("codex: deltas, completion, retries and failures", () => {

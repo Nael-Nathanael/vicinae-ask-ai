@@ -20,7 +20,13 @@ Type a question into [Vicinae](https://vicinae.com). If nothing matches, press E
 | Claude API | Anthropic API key, or any Anthropic-compatible gateway (set **Base URL**; the key is sent as a bearer token) |
 | Gemini API | Gemini API key |
 
-The three login providers run the official command-line tool you already have installed and signed in to. The extension never reads their credentials. Each question runs in an empty folder with tools turned off, so these providers get no file access, no shell, and no MCP servers.
+The three login providers run the official command-line tool you already have installed and signed in to. The extension never reads their credentials, and each question runs in an empty folder. What the model can still do differs:
+
+| Provider | Tools left to the model |
+|---|---|
+| Claude Code | None: `--tools ""`, no MCP servers, no settings or hooks loaded. |
+| Codex | None: the shell, browser, computer-use, image, sub-agent and other tool features are disabled, MCP servers are switched off, and the sandbox is read-only. |
+| Antigravity | Its built-in tools stay loaded; Antigravity has no switch to remove them. Terminal commands run sandboxed (`--sandbox`), and anything that needs a permission prompt, such as reading your files, is refused because the run is headless. Rules you have pre-approved in your own Antigravity settings still apply. |
 
 **Antigravity warning:** Google has suspended accounts for using third-party software with an Antigravity login. The reported cases extracted OAuth tokens, which this extension doesn't do, but the risk is yours. It is never the default.
 

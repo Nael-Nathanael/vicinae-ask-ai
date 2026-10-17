@@ -2,6 +2,8 @@
 
 Type a question into [Vicinae](https://vicinae.com). If nothing matches, press Enter and the answer streams in full-width. Press Esc to ask a follow-up. It's the Spotlight-to-Siri flow from macOS, for Linux.
 
+![An answer with a comparison table, full-width in Vicinae](metadata/ask-ai-1.png)
+
 ## Commands
 
 | Command | What it does |
@@ -33,10 +35,24 @@ The three login providers run the official command-line tool you already have in
 
 ## Answer style
 
-- **Output Style:** Full, Layman's terms (short sentences, everyday words, terms explained), or Custom (your own instructions).
-- **Rich Answers:** in the spirit of ChatGPT's Intelligent UI. The model may add an [OpenUI Lang](https://github.com/thesysdev/openui) block; it renders as headings, tables, bar charts, tips, code and map links, and its buttons and suggested follow-ups appear in the action menu. Turn it off in settings for plain Markdown.
+**Output Style** is Full, Layman's terms (short sentences, everyday words, terms explained), or Custom (your own instructions).
+
+**Rich Answers** is in the spirit of ChatGPT's Intelligent UI: the model may add an [OpenUI Lang](https://github.com/thesysdev/openui) block. It renders as headings, tables, bar charts, tips, code and map links, and its buttons and suggested follow-ups appear in the action menu. Ask for a calculator, converter or estimate and you get a live tool: Ctrl+O opens it as a form whose results update as you change the inputs. Turn Rich Answers off in settings for plain Markdown.
 
 ## Install
+
+From the Vicinae store, once published: open **Store**, search for **Ask AI**, install.
+
+Prebuilt, from the latest GitHub release:
+
+```sh
+mkdir -p ~/.local/share/vicinae/extensions/ask-ai
+curl -fsSL https://github.com/Nael-Nathanael/vicinae-ask-ai/releases/latest/download/ask-ai.tar.gz \
+  | tar -xz -C ~/.local/share/vicinae/extensions/ask-ai
+systemctl --user restart vicinae
+```
+
+From source:
 
 ```sh
 git clone https://github.com/Nael-Nathanael/vicinae-ask-ai

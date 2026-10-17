@@ -4,6 +4,7 @@ import { providerById } from "./providers/index.ts";
 import { ask, startNew, stop, useConversation } from "./session.ts";
 import { SettingsForm } from "./settings-form.tsx";
 import type { Conversation, Turn } from "./store.ts";
+import { WidgetForm } from "./widget-form.tsx";
 
 export function lastCodeBlock(markdown: string): string | undefined {
 	const blocks = [...markdown.matchAll(/```[^\n]*\n([\s\S]*?)```/g)];
@@ -47,7 +48,7 @@ export function ChatView() {
 	const conv = useConversation();
 	const latest = conv.turns.at(-1);
 	const streaming = latest?.status === "streaming";
-	const { markdown: answer, actions: rich } = renderAnswer(latest?.answer ?? "");
+	const { markdown: answer, actions: rich, widgets } = renderAnswer(latest?.answer ?? "");
 	const code = lastCodeBlock(answer);
 
 	return (
@@ -63,7 +64,20 @@ export function ChatView() {
 						shortcut={{ modifiers: ["ctrl"], key: "c" }}
 					/>
 					<Action title="Ask Follow-up" icon={Icon.SpeechBubble} shortcut={{ modifiers: ["ctrl"], key: "l" }} onAction={pop} />
-					{!streaming && rich.length > 0 && <ActionPanel.Section title="From the Answer">{rich.map(richAction)}</ActionPanel.Section>}
+					{!streaming && (widgets.length > 0 || rich.length > 0) && (
+						<ActionPanel.Section title="From the Answer">
+							{widgets.map((w, i) => (
+								<Action
+									key={`w${i}`}
+									title={`Open ${w.title}`}
+									icon={Icon.Calculator}
+									shortcut={i === 0 ? { modifiers: ["ctrl"], key: "o" } : undefined}
+									onAction={() => push(<WidgetForm widget={w} />)}
+								/>
+							))}
+							{rich.map(richAction)}
+						</ActionPanel.Section>
+					)}
 					<Action.Paste title="Paste Answer" content={answer} />
 					{code !== undefined && (
 						<Action.CopyToClipboard

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { renderAnswer, richPrompt } from "../src/openui.ts";
+import { parseNumber, renderAnswer, richPrompt, widgetFields } from "../src/openui.ts";
 
 test("plain answers pass through untouched", () => {
-	assert.deepEqual(renderAnswer("Just **text**."), { markdown: "Just **text**.", actions: [] });
+	assert.deepEqual(renderAnswer("Just **text**."), { markdown: "Just **text**.", actions: [], widgets: [] });
 });
 
 test("a block renders as Markdown with text around it, buttons become actions", () => {
@@ -44,7 +44,7 @@ test("a block still streaming renders what has arrived", () => {
 
 test("unsafe URLs are dropped", () => {
 	const raw = '```openui-lang\nroot = Col([a, b])\na = Image("http://x/y.png", "y")\nb = LinkButton("Run", "javascript:alert(1)")\n```';
-	assert.deepEqual(renderAnswer(raw), { markdown: "", actions: [] });
+	assert.deepEqual(renderAnswer(raw), { markdown: "", actions: [], widgets: [] });
 });
 
 test("dollar signs in content survive", () => {
@@ -52,6 +52,81 @@ test("dollar signs in content survive", () => {
 	assert.equal(markdown, "**$& $1 $$** — Price");
 });
 
-test("the prompt teaches the components and the fence", () => {
-	for (const name of ["Table(", "Chart(", "Place(", "LinkButton(", "FollowUp(", "```openui-lang"]) assert.ok(richPrompt.includes(name), name);
+test("the prompt teaches the components, bindings and the fence", () => {
+	for (const name of ["Table(", "Chart(", "Place(", "LinkButton(", "FollowUp(", "Widget(", "$binding<number>", "@Pow(", "```openui-lang"]) {
+		assert.ok(richPrompt.includes(name), name);
+	}
+});
+
+const KPR = [
+	"KPR estimate:",
+	"```openui-lang",
+	"root = Col([calc, f1])",
+	"$p = 500000000",
+	"$i = 8",
+	"$y = 15",
+	'calc = Widget("KPR calculator", [p, i, y, out, total, Text("Fixed rate only.")])',
+	'p = NumberInput("Loan", $p, "Rp")',
+	'i = NumberInput("Interest per year", $i, "%")',
+	'y = NumberInput("Years", $y)',
+	"r = $i / 100 / 12",
+	"n = $y * 12",
+	"pay = $p * r / (1 - @Pow(1 + r, -n))",
+	'out = Result("Monthly payment", @Round(pay, 0), "Rp")',
+	'total = Result("Total paid", "Rp " + @Round(pay * n, 0))',
+	'f1 = FollowUp("Add a down payment")',
+	"```",
+].join("\n");
+
+test("a widget renders its defaults and results, and is offered as a live form", () => {
+	const { markdown, widgets, actions } = renderAnswer(KPR);
+	assert.equal(widgets.length, 1);
+	assert.equal(widgets[0].title, "KPR calculator");
+	assert.deepEqual(widgets[0].defaults, { $p: 500000000, $i: 8, $y: 15 });
+	assert.match(markdown, /### 🧮 KPR calculator/);
+	assert.match(markdown, /\| Loan \| Rp 500,000,000 \|/);
+	assert.match(markdown, /\| Interest per year \| 8 % \|/);
+	assert.match(markdown, /\*\*Monthly payment:\*\* Rp 4,778,260/);
+	assert.match(markdown, /Fixed rate only\./);
+	assert.match(markdown, /open it with Ctrl\+O/);
+	assert.deepEqual(actions, [{ kind: "ask", question: "Add a down payment" }]);
+});
+
+test("widget results recompute from changed inputs", () => {
+	const [widget] = renderAnswer(KPR).widgets;
+	const fields = widgetFields(widget, { ...widget.defaults, $p: 300000000 });
+	assert.deepEqual(
+		fields.map((f) => f.kind),
+		["number", "number", "number", "result", "result", "note"],
+	);
+	assert.deepEqual(fields[0], { kind: "number", label: "Loan", name: "$p", unit: "Rp" });
+	assert.deepEqual(fields[3], { kind: "result", label: "Monthly payment", value: "Rp 2,866,956" });
+	assert.equal((fields[4] as { value: string }).value, "Rp 516052126");
+});
+
+test("an input given a literal instead of a $variable is still editable", () => {
+	const raw = '```openui-lang\nroot = Col([w])\nw = Widget("Tip", [NumberInput("Bill", 100), Result("Tip", 0)])\n```';
+	const [widget] = renderAnswer(raw).widgets;
+	assert.deepEqual(widget.defaults, { $field0: 100 });
+	assert.equal(widgetFields(widget, widget.defaults)[0].kind, "number");
+});
+
+test("numbers typed the Indonesian or English way", () => {
+	const cases: [string, number | null][] = [
+		["500000000", 500000000],
+		["500.000.000", 500000000],
+		["500,000,000", 500000000],
+		["1.000", 1000],
+		["1,000", 1000],
+		["1.000,5", 1000.5],
+		["1,000.5", 1000.5],
+		["8,5", 8.5],
+		["8.5", 8.5],
+		["0.125", 0.125],
+		["Rp 2.500.000", 2500000],
+		["-3", -3],
+		["", null],
+		["abc", null],
+	];
+	for (const [text, want] of cases) assert.equal(parseNumber(text), want, text);
 });

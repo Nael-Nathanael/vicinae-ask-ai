@@ -39,7 +39,7 @@ export async function assertOk(res: Response, provider: string): Promise<void> {
 	} catch {}
 	const hint =
 		res.status === 401 || res.status === 403
-			? " Check the API key in this command's settings."
+			? " Check the API key in Ask AI Settings (Ctrl+,)."
 			: res.status === 429
 				? " Rate limited or out of credit."
 				: "";

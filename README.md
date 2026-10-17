@@ -1,23 +1,33 @@
 # Ask AI for Vicinae
 
-Type a question into [Vicinae](https://vicinae.com). If nothing matches, press Enter and the answer streams into the same window. Keep typing to ask follow-ups. It's the Spotlight-to-Siri flow from macOS, for Linux.
+Type a question into [Vicinae](https://vicinae.com). If nothing matches, press Enter and the answer streams in full-width. Press Esc to ask a follow-up. It's the Spotlight-to-Siri flow from macOS, for Linux.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| Ask AI | Ask a question; the answer fills the window. Works best as a fallback command. |
+| Ask AI Histories | Past conversations on the left, the selected one in full on the right. Continue, copy or delete. |
+| Ask AI Settings | Choose a provider first; only that provider's fields are shown. Also the answer style. |
 
 ## Providers
 
-Pick one in settings, or switch per conversation from the dropdown next to the search bar (Ctrl+P).
-
 | Provider | Sign-in |
 |---|---|
-| Claude API | Anthropic API key |
-| OpenAI API | OpenAI API key |
-| Gemini API | Gemini API key |
 | Claude Code | Your existing `claude` login |
 | Codex | Your existing `codex` login |
 | Antigravity | Your existing `agy` login |
+| Claude API | Anthropic API key, or any Anthropic-compatible gateway (set **Base URL**; the key is sent as a bearer token) |
+| Gemini API | Gemini API key |
 
-The last three run the official command-line tool you already have installed and signed in to. The extension never reads their credentials. Each question runs in an empty folder with tools turned off, so these providers get no file access, no shell, and no MCP servers.
+The three login providers run the official command-line tool you already have installed and signed in to. The extension never reads their credentials. Each question runs in an empty folder with tools turned off, so these providers get no file access, no shell, and no MCP servers.
 
 **Antigravity warning:** Google has suspended accounts for using third-party software with an Antigravity login. The reported cases extracted OAuth tokens, which this extension doesn't do, but the risk is yours. It is never the default.
+
+## Answer style
+
+- **Output Style:** Full, Layman's terms (short sentences, everyday words, terms explained), or Custom (your own instructions).
+- **Rich Answers:** in the spirit of ChatGPT's Intelligent UI. The model may add an [OpenUI Lang](https://github.com/thesysdev/openui) block; it renders as headings, tables, bar charts, tips, code and map links, and its buttons and suggested follow-ups appear in the action menu. Turn it off in settings for plain Markdown.
 
 ## Install
 
@@ -32,30 +42,32 @@ Then, in Vicinae:
 
 1. Open **Configure Fallback Commands**.
 2. Search for **Ask AI**, press Enter to enable it, and keep it at the top of the list.
+3. Open **Ask AI Settings** and pick a provider.
 
-Settings live in Vicinae under the extension's preferences (Ctrl+, inside Ask AI).
+Ask AI only takes over Enter when nothing else in the root search matches. A long question can fuzzy-match an app; check that Ask AI is selected before pressing Enter.
 
 ## Use
 
-- Type a question in the root search and press Enter on **Ask AI**.
-- Type a follow-up and press Enter. Every follow-up includes the earlier turns, even after switching provider.
-- Press Enter with an empty search bar to copy the selected answer.
+In the answer view:
 
 | Shortcut | Action |
 |---|---|
-| Ctrl+P | Switch provider |
-| Ctrl+N | New conversation |
-| Ctrl+H | History |
+| Enter or Ctrl+C | Copy the answer |
+| Esc or Ctrl+L | Ask a follow-up |
+| Ctrl+Shift+C | Copy the conversation |
+| Ctrl+Shift+K | Copy the last code block |
 | Ctrl+. | Stop the answer |
 | Ctrl+R | Ask again |
-| Ctrl+Shift+K | Copy the last code block |
+| Ctrl+N | New conversation |
+| Ctrl+, | Settings |
 
-Launching Ask AI from the fallback always starts a new conversation. Opening it by name continues the last conversation if it was active in the past 10 minutes. The 100 most recent conversations are kept.
+Every follow-up includes the earlier turns. Launching Ask AI from the fallback always starts a new conversation. Opening it by name continues the last conversation if it was active in the past 10 minutes. The 100 most recent conversations are kept.
 
 ## Troubleshooting
 
-- **"Couldn't find `claude`" (or `codex`, `agy`).** Vicinae runs as a systemd user service whose PATH often lacks your shell's additions. The extension also checks `~/.local/bin`. If your CLI lives elsewhere, add its folder under **Extra PATH**.
+- **"Couldn't find `claude`" (or `codex`, `agy`).** Vicinae runs as a systemd user service whose PATH often lacks your shell's additions. The extension also checks `~/.local/bin`. If your CLI lives elsewhere, add its folder under **Extra PATH** in settings.
 - **Signed out.** Run `claude auth login`, `codex login`, or `agy` in a terminal.
+- **New commands don't appear after `npm run build`.** Run `npm run dev` once; it makes Vicinae reload the extension.
 
 ## Development
 
@@ -64,10 +76,10 @@ npm run dev        # hot reload into Vicinae
 npm test           # unit tests
 npm run typecheck
 npm run lint       # manifest check
-node --experimental-strip-types test/live.ts   # real calls to the three CLIs
+node --experimental-strip-types test/live.ts   # real calls; see the file header for keys
 ```
 
-Built against Vicinae 0.21.1 and works on newer versions.
+Built against Vicinae 0.21.1 and works on newer versions. An OpenAI provider exists in `src/providers/openai.ts` but is not offered until it has been tested with a real key.
 
 ## License
 

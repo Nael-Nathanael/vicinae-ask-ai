@@ -63,7 +63,7 @@ export function runCli(opts: {
 	const bin = findBin(opts.name, opts.extraPath);
 	if (!bin) {
 		throw new ProviderError(
-			`Couldn't find \`${opts.name}\`. Install ${opts.label}, or add its folder under **Extra PATH** in this command's settings.`,
+			`Couldn't find \`${opts.name}\`. Install ${opts.label}, or add its folder under **Extra PATH** in Ask AI Settings (Ctrl+,).`,
 		);
 	}
 	const [command, args] = isNodeScript(bin) ? [process.execPath, [bin, ...opts.args]] : [bin, opts.args];

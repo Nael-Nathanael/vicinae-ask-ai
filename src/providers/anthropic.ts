@@ -5,7 +5,10 @@ export const anthropic: Provider = {
 	id: "anthropic",
 	title: "Claude API",
 	async stream(messages, opts) {
-		const client = new Anthropic({ apiKey: requireKey(opts, "Anthropic API", "Anthropic API Key") });
+		const key = requireKey(opts, "Claude API", "API Key");
+		// The SDK appends /v1/messages itself, so a gateway URL ending in /v1 would double it.
+		const baseURL = opts.baseUrl?.trim().replace(/\/+$/, "").replace(/\/v1$/, "");
+		const client = baseURL ? new Anthropic({ baseURL, apiKey: null, authToken: key }) : new Anthropic({ apiKey: key });
 		try {
 			const stream = client.beta.messages.stream(
 				{
@@ -28,7 +31,7 @@ export const anthropic: Provider = {
 		} catch (err) {
 			if (err instanceof Anthropic.APIUserAbortError) throw new DOMException("Aborted", "AbortError");
 			if (err instanceof Anthropic.AuthenticationError) {
-				throw new ProviderError("The Anthropic API key was rejected. Check **Anthropic API Key** in this command's settings.");
+				throw new ProviderError("The Claude API key was rejected. Check **API Key** in Ask AI Settings (Ctrl+,).");
 			}
 			if (err instanceof Anthropic.RateLimitError) throw new ProviderError("Anthropic API: rate limited. Try again in a moment.");
 			if (err instanceof Anthropic.APIError) throw new ProviderError(`Anthropic API ${err.status ?? ""}: ${err.message}`);

@@ -7,6 +7,8 @@ export type ProviderId = "anthropic" | "openai" | "gemini" | "claude-code" | "co
 export type StreamOptions = {
 	model?: string;
 	apiKey?: string;
+	/** Anthropic-compatible gateway; the key is then sent as a bearer token. */
+	baseUrl?: string;
 	systemPrompt: string;
 	/** Empty folder the CLIs run in, so they see no project files. */
 	workdir: string;
@@ -27,7 +29,7 @@ export class ProviderError extends Error {}
 
 export function requireKey(opts: StreamOptions, provider: string, setting: string): string {
 	const key = opts.apiKey?.trim();
-	if (!key) throw new ProviderError(`No ${provider} key yet. Add one under **${setting}** in this command's settings.`);
+	if (!key) throw new ProviderError(`No ${provider} key yet. Add one under **${setting}** in Ask AI Settings (Ctrl+,).`);
 	return key;
 }
 

@@ -9,8 +9,6 @@ export type Turn = {
 	createdAt: number;
 	status: "streaming" | "done" | "stopped" | "error";
 	error?: string;
-	/** Bumped on every streamed update; drives the redraw workaround in ask-ai.tsx. */
-	rev?: number;
 };
 
 export type Conversation = { id: string; title: string; providerId: ProviderId; updatedAt: number; turns: Turn[] };

@@ -18,7 +18,7 @@ export const gemini: Provider = {
 		const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`, {
 			method: "POST",
 			headers: {
-				"x-goog-api-key": requireKey(opts, "Gemini API", "Gemini API Key"),
+				"x-goog-api-key": requireKey(opts, "Gemini API", "API Key"),
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({

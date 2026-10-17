@@ -1,0 +1,135 @@
+{
+	"$schema": "https://raw.githubusercontent.com/vicinaehq/vicinae/refs/heads/main/extra/schemas/extension.json",
+	"name": "ask-ai",
+	"title": "Ask AI",
+	"description": "Ask a question from the root search and get a streamed answer from Claude, OpenAI, Gemini, or your logged-in coding CLIs",
+	"categories": ["Productivity"],
+	"license": "MIT",
+	"author": "Nael-Nathanael",
+	"contributors": [],
+	"pastContributors": [],
+	"icon": "icon.png",
+	"commands": [
+		{
+			"name": "ask-ai",
+			"title": "Ask AI",
+			"description": "Ask a question and follow up in place. Works best as a fallback command",
+			"mode": "view"
+		}
+	],
+	"preferences": [
+		{
+			"name": "defaultProvider",
+			"title": "Default Provider",
+			"description": "Provider used for new conversations",
+			"type": "dropdown",
+			"required": false,
+			"default": "claude-code",
+			"data": [
+				{ "title": "Claude API", "value": "anthropic" },
+				{ "title": "OpenAI API", "value": "openai" },
+				{ "title": "Gemini API", "value": "gemini" },
+				{ "title": "Claude Code (login)", "value": "claude-code" },
+				{ "title": "Codex (login)", "value": "codex" },
+				{ "title": "Antigravity (login)", "value": "antigravity" }
+			]
+		},
+		{
+			"name": "anthropicApiKey",
+			"title": "Anthropic API Key",
+			"description": "Key from console.anthropic.com, used by the Claude API provider",
+			"type": "password",
+			"required": false
+		},
+		{
+			"name": "anthropicModel",
+			"title": "Claude API Model",
+			"description": "Model id for the Claude API provider",
+			"type": "textfield",
+			"required": false,
+			"default": "claude-opus-5-5"
+		},
+		{
+			"name": "openaiApiKey",
+			"title": "OpenAI API Key",
+			"description": "Key from platform.openai.com, used by the OpenAI API provider",
+			"type": "password",
+			"required": false
+		},
+		{
+			"name": "openaiModel",
+			"title": "OpenAI API Model",
+			"description": "Model id for the OpenAI API provider",
+			"type": "textfield",
+			"required": false,
+			"default": "gpt-5.5"
+		},
+		{
+			"name": "geminiApiKey",
+			"title": "Gemini API Key",
+			"description": "Key from aistudio.google.com, used by the Gemini API provider",
+			"type": "password",
+			"required": false
+		},
+		{
+			"name": "geminiModel",
+			"title": "Gemini API Model",
+			"description": "Model id for the Gemini API provider",
+			"type": "textfield",
+			"required": false,
+			"default": "gemini-3.8-flash"
+		},
+		{
+			"name": "claudeCodeModel",
+			"title": "Claude Code Model",
+			"description": "Model passed to claude --model. Empty uses your Claude Code default",
+			"type": "textfield",
+			"required": false
+		},
+		{
+			"name": "codexModel",
+			"title": "Codex Model",
+			"description": "Model passed to Codex. Empty uses your Codex default",
+			"type": "textfield",
+			"required": false
+		},
+		{
+			"name": "antigravityModel",
+			"title": "Antigravity Model",
+			"description": "Model passed to agy --model (see agy models). Empty uses your Antigravity default",
+			"type": "textfield",
+			"required": false
+		},
+		{
+			"name": "systemPrompt",
+			"title": "System Prompt",
+			"description": "Instructions sent with every question",
+			"type": "textfield",
+			"required": false,
+			"default": "You answer questions typed into a desktop launcher. Be direct and brief. Use Markdown."
+		},
+		{
+			"name": "extraPath",
+			"title": "Extra PATH",
+			"description": "Colon-separated folders searched for claude, codex and agy before PATH and ~/.local/bin",
+			"type": "textfield",
+			"required": false
+		}
+	],
+	"scripts": {
+		"build": "vici build",
+		"dev": "vici develop",
+		"lint": "vici lint",
+		"typecheck": "tsc --noEmit",
+		"test": "node --experimental-strip-types --test test/*.test.ts"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.135.0",
+		"@vicinae/api": "0.21.1"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"@types/react": "19.0.10",
+		"typescript": "^5.9.2"
+	}
+}
